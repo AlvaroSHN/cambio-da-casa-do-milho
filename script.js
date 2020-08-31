@@ -23,8 +23,8 @@ const setupEventHandlers = () => {
 }
 
 const handleSearchEvent = () => {
-  const currencyValue = document.querySelector('#currency-input').value;
-
+  const currencyValue = document.querySelector('#currency-input').value.toUpperCase();  //  ToUpperCase
+  
   if (currencyValue === '') {
     renderEmptyAlert()
   } else {
@@ -43,12 +43,17 @@ const clearList = () => {
 }
 
 const fetchCurrency = (currency) => {
-  const endpoint = `${url}?base=${currency}`;
+
+  const currencyFilterInputValue = document.querySelector('#currency-input-filter').value.replace(/\s/g, '').toUpperCase();
+  let endpoint = `${url}?base=${currency}`;
+  
+  if(currencyFilterInputValue.length > 0) {
+    endpoint = `${endpoint}&symbols=${currencyFilterInputValue}`
+  }
 
   fetch(endpoint)
     .then((response) => response.json())
     .then((object) => {
-      console.log(object);
       if (object.error) {
         throw new Error(object.error);
       } else {
@@ -63,20 +68,29 @@ const handleError = (errorMessage) => {
 }
 
 const handleRates = (rates) => {
-  const ratesKeys = Object.keys(rates);
+  const ratesKeys = Object.keys(rates).sort();  //  Ordenando a lista
   
   ratesKeys.forEach((key) => {
     const value = rates[key];
     renderRate(key, value);
   })
+
 }
 
 const renderRate = (key, value) => {
   const currencyList = document.querySelector('#currency-list');
-  const formattedValue = value.toFixed(2);
+  let currencyInputNumber = document.querySelector('#currency-input-number').value; //  Multiplicando os valores
+  currencyInputNumber === '' ? currencyInputNumber = 1 : currencyInputNumber;
+  
+  const formattedValue = value.toFixed(2)*currencyInputNumber;
 
   const li = document.createElement('li');
   li.innerHTML = `<b>${key}:</b> ${formattedValue}`;
 
   currencyList.appendChild(li);
+  
 }
+
+  //  Adicionar botão de limpar lista
+  const clearButton = document.querySelector('#clear-button');
+  clearButton.addEventListener('click', clearList);
